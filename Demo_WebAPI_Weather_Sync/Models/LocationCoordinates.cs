@@ -17,4 +17,14 @@ namespace Demo_WebAPI_Weather
             this.Longitude = longitude;
         }
     }
+
+    public struct LocationZip
+    {
+        public int Zip { get; set; }
+
+        public LocationZip(int zip)
+        {
+            this.Zip = zip;
+        }
+    }
 }

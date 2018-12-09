@@ -24,6 +24,7 @@ namespace Demo_WebAPI_Weather
         {
             bool quit = false;
             LocationCoordinates coordinates = new LocationCoordinates(0, 0);
+            LocationZip zips = new LocationZip(0);
 
             while (!quit)
             {
@@ -31,9 +32,11 @@ namespace Demo_WebAPI_Weather
 
                 Console.WriteLine("Enter the number of your menu choice.");
                 Console.WriteLine();
-                Console.WriteLine("1) Set the Location");
-                Console.WriteLine("2) Display the Current Weather");
-                Console.WriteLine("3) Exit");
+                Console.WriteLine("1) Set the Location by Coordinates");
+                Console.WriteLine("2) Set the Location by Zip Code");
+                Console.WriteLine("3) Display the Current Weather by Coordinates");
+                Console.WriteLine("4) Display the Current Weather by Zip");
+                Console.WriteLine("5) Exit");
                 Console.WriteLine();
                 Console.Write("Enter Choice:");
                 string userMenuChoice = Console.ReadLine();
@@ -41,14 +44,22 @@ namespace Demo_WebAPI_Weather
                 switch (userMenuChoice)
                 {
                     case "1":
-                        coordinates = DisplayGetLocation();
+                        coordinates = DisplayGetLocationByCoordinates();
                         break;
 
                     case "2":
-                        DisplayCurrentWeather(coordinates);
+                        zips = DisplayGetLocationByZip();
                         break;
 
                     case "3":
+                        DisplayCurrentWeather(coordinates);
+                        break;
+
+                    case "4":
+                        DisplayCurrentWeatherByZip(zips);
+                        break;
+
+                    case "5":
                         quit = true;
                         break;
 
@@ -117,7 +128,7 @@ namespace Demo_WebAPI_Weather
             Console.WriteLine();
         }
 
-        static LocationCoordinates DisplayGetLocation()
+        static LocationCoordinates DisplayGetLocationByCoordinates()
         {
             DisplayHeader("Set Location by Coordinates");
 
@@ -138,6 +149,24 @@ namespace Demo_WebAPI_Weather
             return coordinates;
         }
 
+        static LocationZip DisplayGetLocationByZip()
+        {
+            DisplayHeader("Set Location by Zip Code");
+
+            LocationZip zips = new LocationZip();
+
+            Console.Write("Enter Zip Code: ");
+            zips.Zip = int.Parse(Console.ReadLine());
+
+            Console.WriteLine();
+            Console.WriteLine($"Location Zip Code: ({zips.Zip})");
+            Console.WriteLine();
+
+            DisplayContinuePrompt();
+
+            return zips;
+        }
+
         static WeatherData GetCurrentWeatherData(LocationCoordinates coordinates)
         {
             string url;
@@ -153,6 +182,25 @@ namespace Demo_WebAPI_Weather
 
             WeatherData currentWeather = new WeatherData();
  
+            currentWeather = HttpGetCurrentWeatherByLocation(url);
+
+            return currentWeather;
+        }
+
+        static WeatherData GetCurrentWeatherDataByZip(LocationZip zips)
+        {
+            string url;
+
+            StringBuilder sb = new StringBuilder();
+            sb.Clear();
+            sb.Append("http://api.openweathermap.org/data/2.5/weather?");
+            sb.Append("&zip=" + zips.Zip.ToString());
+            sb.Append("&appid=5e8d3f877557f170f55863ff55ad54f5");
+
+            url = sb.ToString();
+
+            WeatherData currentWeather = new WeatherData();
+
             currentWeather = HttpGetCurrentWeatherByLocation(url);
 
             return currentWeather;
@@ -176,11 +224,31 @@ namespace Demo_WebAPI_Weather
 
         static void DisplayCurrentWeather(LocationCoordinates coordinates)
         {
-            DisplayHeader("Current Weather");
+            DisplayHeader("Current Weather by Coordinates");
 
             WeatherData currentWeatherData = GetCurrentWeatherData(coordinates);
             
             Console.WriteLine(String.Format("Temperature (Fahrenheit): {0:0.0}", ConvertToFahrenheit(currentWeatherData.Main.Temp)));
+            Console.WriteLine(String.Format("Wind: {0:0.0}", currentWeatherData.Wind.Speed));
+            Console.WriteLine(String.Format("Visibility: {0:0.0}", currentWeatherData.Visibility));
+            Console.WriteLine(String.Format("Pressure: {0}", currentWeatherData.Main.Pressure));
+            Console.WriteLine(String.Format("Humidity: {0:0.0}", currentWeatherData.Main.Humidity));
+
+
+            DisplayContinuePrompt();
+        }
+
+        static void DisplayCurrentWeatherByZip(LocationZip zips)
+        {
+            DisplayHeader("Current Weather by Zip");
+
+            WeatherData currentWeatherDataByZip = GetCurrentWeatherDataByZip(zips);
+
+            Console.WriteLine(String.Format("Temperature (Fahrenheit): {0:0.0}", ConvertToFahrenheit(currentWeatherDataByZip.Main.Temp)));
+            Console.WriteLine(String.Format("Wind: {0:0.0}", currentWeatherDataByZip.Wind.Speed));
+            Console.WriteLine(String.Format("Visibility: {0:0.0}", currentWeatherDataByZip.Visibility));
+            Console.WriteLine(String.Format("Pressure: {0}", currentWeatherDataByZip.Main.Pressure));
+            Console.WriteLine(String.Format("Humidity: {0:0.0}", currentWeatherDataByZip.Main.Humidity));
 
             DisplayContinuePrompt();
         }
